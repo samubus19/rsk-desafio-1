@@ -6,72 +6,72 @@
 // global scope, and execute the script.
 const hre = require("hardhat");
 
-const formatBalance = (bn) => hre.ethers.utils.formatEther(bn) + ' RBTC'
-
 const deployToken = async () => {
-  const Qatar = await hre.ethers.getContractFactory('Qatar')
-  const token = await tokenFactory.deploy()
-  await Qatar.deployed()
-  token.transfer
-  console.log("Token address: ", token.address)
-  const [signer] = await hre.ethers.getSigners()
-     //const balanceOfSigner = await signer.getBalance()
-    // console.log('balanceOfSigner', formatBalance(balanceOfSigner))
-    // const balanceOfToken = await hre.ethers.provider.getBalance(token.signer.getAddress())
-    // console.log('balanceOfToken', formatBalance(balanceOfToken))
 
+  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
+  const oneMinuteinSecs           = 60;
+  const unlockTime                = currentTimestampInSeconds + oneMinuteinSecs;
 
-  const alice1 = '0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45'
-  const alice2 = '0xD6a4BE579821fc6737360f0f921BAdFcFea55ACc'
-  const alice3 = '0xa54d3c09E34aC96807c1CC397404bF2B98DC4eFb'
+  const alice1                    = '0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45'
+  const alice2                    = '0xD6a4BE579821fc6737360f0f921BAdFcFea55ACc'
+  const signer                    = await hre.ethers.getSigner()
+  const Qatar                     = await hre.ethers.getContractFactory('Qatar')
+  const qatar                     = await Qatar.deploy(unlockTime)
+  await qatar.deployed()
 
+  try {
+    await qatar.mintear(signer.address, 12)
+    console.log("Balance despues de mintear: ",await qatar.balanceOf(signer.address))
+    // await qatar.mintear(alice1, 5)
+    // console.log("Balance de alice despues de mintear: ",await qatar.balanceOf(alice1))
+  } catch (error) {
+    console.log(error.message)    
+  }
+
+  //CAMBIAR UNLOCK TIME
+  try {
+    console.log("unlockTime antes de ser cambiado: ", await qatar.getUnlockTime())
+    await qatar.cambiarUnlockTime(0, signer.address);
+    console.log("unlockTime despues de ser cambiado: ", await qatar.getUnlockTime())
+  } catch (error) {
+    console.log(error.message)    
+  }
+
+  try {
+    await qatar.mintear(signer.address, 12)
+    console.log("Balance de owner antes de transferir",await qatar.balanceOf(signer.address))
+  } catch (error) {
+    console.log(error.message)    
+  }
+
+  /**
+   * TRANSFERENCIAS DE TOKENS
+   */
+  // const tx = await qatar.transfer(
+  //   alice1,
+  //   hre.ethers.BigNumber.from("12")
+  // )
+  // tx.wait()
+
+  // console.log("Balance de alice despues de transferir",await qatar.balanceOf(alice1))
+  // console.log("Balance de owner despues de transferir",await qatar.balanceOf(signer.address))
+
+/**
+ * TRANSFERENCIAS DE VALOR
+ */
   // const tx1 = await token.signer.sendTransaction({
   //   to: alice1,
   //   value: ethers.utils.parseEther('0.0205')
   // })
   // console.log('tx1', tx1)
-
   // const receipt1 = await tx1.wait()
   // console.log('receipt1', receipt1)
-
-  // const tx2 = await token.signer.sendTransaction({
-  //   to: alice2,
-  //   value: ethers.utils.parseEther('0.0005')
-  // })
-  // console.log('tx2', tx2)
-
-  // const receipt2 = await tx2.wait()
-  // console.log('receipt2', receipt2)
-
-  // const tx3 = await token.signer.sendTransaction({
-  //   to: alice3,
-  //   value: ethers.utils.parseEther('0.4005')
-  // })
-  // console.log('tx3', tx3)
-
-  // const receipt3 = await tx3.wait()
-  // console.log('receipt3', receipt3)
-
-  const tx3 = await token.transfer({
-      alice1,
-      10
-    })
-    tx3.wait()
-
-  const balanceOfAlice1 = await hre.ethers.provider.getBalance(alice1)
-  console.log('balanceOfAlice1', formatBalance(balanceOfAlice1))
-  // const balanceOfAlice2 = await hre.ethers.provider.getBalance(alice2)
-  // console.log('balanceOfAlice2', formatBalance(balanceOfAlice2))
-  // const balanceOfAlice3 = await hre.ethers.provider.getBalance(alice3)
-  // console.log('balanceOfAlice3', formatBalance(balanceOfAlice3))
-
-
-
-
-  // return token
+  // const balanceOfAlice1 = await hre.ethers.provider.getBalance(alice1)
+  // console.log('balanceOfAlice1', formatBalance(balanceOfAlice1))
+  
 }
-
-
+// We recommend this pattern to be able to use async/await everywhere
+// and properly handle errors.
 deployToken().catch((error) => {
   console.error(error);
   process.exitCode = 1;
